@@ -1,0 +1,47 @@
+{ // see: https://clang.llvm.org/docs/UsersManual.html, https://clang.llvm.org/docs/ClangCommandLineReference.html
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "cppbuild",
+			"label": "C/C++: clang++ build active file",
+			"command": "/usr/bin/clang++",
+			"args": [
+				"-std=c++17",
+				"-stdlib=libc++",
+				"-fcolor-diagnostics", // use colors in diagnostics
+				"-Wall", // enable all diagnostics
+				"-fansi-escape-codes", // Use ANSI escape codes for diagnostics
+				"-g", // generate debugging info
+				"-I${workspaceFolder}/dependencies/include", //  Add directory to include search path
+				// "-L${workspaceFolder}/dependencies/library", // Add directory to library search path
+				"${workspaceFolder}/*.cpp", // all the cpp files
+				"${workspaceFolder}/dependencies/library/libglfw.3.3.dylib", // glfw library
+				"${workspaceFolder}/glad.c", // glad file
+				"-o", // output file
+				"${workspaceFolder}/app", // built file
+				"-framework",
+				"OpenGL",
+				"-framework",
+				"Cocoa",
+				"-framework",
+				"IOKit",
+				"-framework",
+				"CoreVideo",
+				"-framework",
+				"CoreFoundation",
+				"-Wno-deprecated"
+			],
+			"options": {
+				"cwd": "${fileDirname}"
+			},
+			"problemMatcher": [
+				"$gcc" // selects the output parser to use for finding errors and warnings in the compiler output
+			],
+			"group": { // sepecifies that this project will run when you build a task => for convenience only
+				"kind": "build",
+				"isDefault": true
+			},
+			"detail": "compiler: /usr/bin/clang++"
+		}
+	]
+}
