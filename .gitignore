@@ -33,3 +33,6 @@
 
 # Dynamic Sym
 *.dSYM/
+
+# pdf
+*.pdf
