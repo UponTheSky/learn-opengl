@@ -13,7 +13,7 @@ const int WINDOW_WIDTH = 800;
 const int WINDOW_HEIGHT = 600;
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-void processInput(GLFWwindow *window);
+void processInput(GLFWwindow *window, float& mix_amount);
 
 int main()
 {
@@ -44,10 +44,10 @@ int main()
   // input data
   float vertices[] = {
     // positions // colors // texture coords
-    0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 0.55f, 0.55f, // top right
-    0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.55f, 0.45f, // bottom right
-    -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.45f, 0.45f, // bottom left
-    -0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 0.45f, 0.55f // top left
+    0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, // top right
+    0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, // bottom right
+    -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // bottom left
+    -0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f // top left
   };
 
   unsigned int indices[] = { // note that we start from 0!
@@ -117,13 +117,16 @@ int main()
   ourShader.setInt("texture1", 0);
   ourShader.setInt("texture2", 1);
 
+  float mix_amount = 1.0;
+  ourShader.setFloat("mix_amount", mix_amount);
+
   glBindBuffer(GL_ARRAY_BUFFER, 0);
   glBindVertexArray(0);
   glBindTexture(GL_TEXTURE_2D, 0);
 
   while (!glfwWindowShouldClose(window)) {
     // input
-    processInput(window);
+    processInput(window, mix_amount);
 
     // render commands
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
@@ -138,6 +141,7 @@ int main()
     ourShader.use();
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    ourShader.setFloat("mix_amount", mix_amount);
 
     // check and call events, and swap the buffers
     glfwSwapBuffers(window);
@@ -157,8 +161,16 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
   glViewport(0, 0, width, height);
 }
 
-void processInput(GLFWwindow *window) {
+void processInput(GLFWwindow *window, float& mix_amount) {
   if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
     glfwSetWindowShouldClose(window, true);
+  }
+
+  if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
+    mix_amount += 0.1;
+  }
+
+  if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
+    mix_amount -= 0.1;
   }
 }
