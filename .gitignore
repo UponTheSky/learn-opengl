@@ -36,3 +36,6 @@
 
 # pdf
 *.pdf
+
+# dependencies
+dependencies/**
