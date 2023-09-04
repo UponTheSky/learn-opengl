@@ -149,12 +149,22 @@ int main()
     ourShader.use();
 
     glm::mat4 trans = glm::mat4(1.0);
-    trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0, 0.0, 1.0));
     trans = glm::translate(trans, glm::vec3(0.5, -0.5, 0.0));
+    trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0, 0.0, 1.0));
+
 
     unsigned int transformLoc = glGetUniformLocation(ourShader.ID, "transform");
     glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
 
+    glBindVertexArray(VAO);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+    trans = glm::mat4(1.0);
+    trans = glm::scale(trans, abs(sin((float)glfwGetTime())) * glm::vec3(1.0));
+    trans = glm::translate(trans, glm::vec3(-0.5, 0.5, 0.0));
+
+    transformLoc = glGetUniformLocation(ourShader.ID, "transform");
+    glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
 
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
