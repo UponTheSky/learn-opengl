@@ -27,6 +27,9 @@ void processInput(GLFWwindow*, glm::vec3&, glm::vec3&, glm::vec3&, float);
 void mouse_callback(GLFWwindow*, double, double);
 void scroll_callback(GLFWwindow*, double, double);
 
+glm::mat4 myLookAt(glm::vec3& cameraPos, glm::vec3& cameraDir, glm::vec3& cameraUp);
+
+
 int main()
 {
   // window setup
@@ -212,7 +215,8 @@ int main()
 
 
     glm::mat4 projection = glm::perspective(glm::radians(fov), 800.0f / 600.0f, 0.1f, 100.0f);
-    glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+    glm::vec3 cameraTarget = cameraPos + cameraFront;
+    glm::mat4 view = myLookAt(cameraPos, cameraTarget, cameraUp);
 
     ourShader.setMat4("view", view);
     ourShader.setMat4("projection", projection);
@@ -293,8 +297,8 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
 
   if (pitch > 89.0f) {
     pitch = 89.0f;
-  } else if (pitch < -89.0f) {
-    pitch = -89.0f;
+  } else if (pitch < 0) {
+    pitch = 0.0f;
   }
 }
 
@@ -306,4 +310,27 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
   } else if (fov > 45.0f) {
     fov = 45.0f;
   }
+}
+
+glm::mat4 myLookAt(
+  glm::vec3& cameraPos,
+  glm::vec3& cameraTarget,
+  glm::vec3& cameraUp
+) {
+  glm::vec3 cameraDir = cameraTarget - cameraPos;
+  glm::vec3 x = glm::normalize(glm::cross(cameraDir, cameraUp));
+  glm::vec3 y = glm::normalize(glm::cross(x, cameraDir));
+  glm::vec3 z = glm::normalize(cameraDir);
+
+  glm::mat4 trans = glm::translate(glm::mat4(1.0f), -cameraPos);
+  glm::mat4 rot = glm::transpose(
+    glm::mat4(
+      glm::vec4(x, 1.0f),
+      glm::vec4(y, 1.0f),
+      glm::vec4(z, 1.0f),
+      glm::vec4(0, 0, 0, 1)
+    )
+  );
+
+  return rot * trans;
 }
