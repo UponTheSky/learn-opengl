@@ -18,7 +18,7 @@ Camera::Camera()
   up(UP),
   yaw(-90.0f),
   pitch(0.0f),
-  fov(1.0f) {}
+  fov(50.0f) {}
 
 glm::mat4 Camera::getView() const {
   return glm::lookAt(position, position + front, up);
