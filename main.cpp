@@ -111,7 +111,7 @@ int main()
     camera->front = glm::normalize(direction);
 
     float movingScale = (float)sin(glfwGetTime());
-    glm::vec3 lightPos = glm::vec3(1.2f, 1.0f, 2.0f) + glm::vec3(0.0f, 1.0f * movingScale, 3.0f * movingScale);
+    glm::vec3 lightPos = glm::vec3(1.2f, 1.0f, 2.0f);
     glm::mat4 view = camera->getView();
     glm::mat4 projection = camera->getProjection();
     glm::mat4 model = glm::mat4(1.0f);
