@@ -22,13 +22,13 @@
 				"-framework",
 				"OpenGL",
 				"-framework",
-				"Cocoa",
+				"Cocoa", // glfw
 				"-framework",
-				"IOKit",
-				"-framework",
-				"CoreVideo",
-				"-framework",
-				"CoreFoundation",
+				"IOKit", // glfw
+				// "-framework",
+				// "CoreVideo",
+				// "-framework",
+				// "CoreFoundation",
 				"-Wno-deprecated"
 			],
 			"options": {
