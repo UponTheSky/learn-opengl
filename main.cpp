@@ -116,6 +116,23 @@ int main()
 
   stbi_image_free(data);
 
+  unsigned int emissionMap;
+  glGenTextures(1, &emissionMap);
+  glBindTexture(GL_TEXTURE_2D, emissionMap);
+
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+  data = stbi_load("matrix.jpeg", &width, &height, &nrChannels, 0);
+  if (data) {
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+    glGenerateMipmap(GL_TEXTURE_2D);
+  }
+
+  stbi_image_free(data);
+
   glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
   glEnableVertexAttribArray(2);
 
@@ -172,6 +189,7 @@ int main()
 
     lightingShader.setInt("material.diffuse", 0);
     lightingShader.setInt("material.specular", 1);
+    lightingShader.setInt("material.emission", 2);
     lightingShader.setVec3("material.specular", glm::vec3(0.5f, 0.5f, 0.5f));
     lightingShader.setFloat("material.shininess", 32.0f);
 
@@ -189,6 +207,8 @@ int main()
     glBindTexture(GL_TEXTURE_2D, diffuseMap);
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, specularMap);
+    glActiveTexture(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, emissionMap);
     glDrawArrays(GL_TRIANGLES, 0, 36);
 
     model = glm::scale(glm::translate(glm::mat4(1.0f), lightPos), glm::vec3(0.2f));
