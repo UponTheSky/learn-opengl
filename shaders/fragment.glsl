@@ -13,8 +13,32 @@ struct Material {
   sampler2D specular;
   float shininess;
 };
+uniform Material material;
 
-struct Light {
+struct DirLight {
+  vec3 direction;
+
+  vec3 ambient;
+  vec3 diffuse;
+  vec3 specular;
+};
+uniform DirLight dirLight;
+
+struct PointLight {
+  vec3 position;
+
+  float constant;
+  float linear;
+  float quadratic;
+
+  vec3 ambient;
+  vec3 diffuse;
+  vec3 specular;
+};
+#define NR_POINT_LIGHTS 4
+uniform PointLight pointLights[NR_POINT_LIGHTS];
+
+struct SpotLight {
   vec3 position;
   vec3 direction;
   float cutoff;
@@ -23,30 +47,69 @@ struct Light {
   vec3 ambient;
   vec3 diffuse;
   vec3 specular;
-
-  float constant;
-  float linear;
-  float quadratic;
 };
+uniform SpotLight spotLight;
 
-uniform Material material;
-uniform Light light;
+vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir);
+vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir);
+vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir);
 
 void main() {
-  vec3 ambient = light.ambient * texture(material.diffuse, TexCoords).rgb;
-
   vec3 norm = normalize(Normal);
-  vec3 lightDir = normalize(light.position - FragPos);
-  float diff = max(dot(norm, lightDir), 0.0);
-  vec3 diffuse = diff * light.diffuse * texture(material.diffuse, TexCoords).rgb;
-
   vec3 viewDir = normalize(viewPos - FragPos);
-  vec3 reflectDir = reflect(-lightDir, norm);
+
+  vec3 result = CalcDirLight(dirLight, norm, viewDir);
+
+  for(int i = 0; i < NR_POINT_LIGHTS; i++) {
+    result += CalcPointLight(pointLights[i], norm, FragPos, viewDir);
+  }
+
+  result += CalcSpotLight(spotLight, norm, FragPos, viewDir);
+
+  FragColor = vec4(result, 1.0);
+}
+
+vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir) {
+  vec3 lightDir = normalize(-light.direction);
+  float diff = max(dot(normal, lightDir), 0.0);
+
+  vec3 reflectDir = reflect(-lightDir, normal);
   float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
-  vec3 specular = spec * light.specular * texture(material.specular, TexCoords).rgb;
+
+  vec3 ambient = light.ambient * vec3(texture(material.diffuse, TexCoords));
+  vec3 diffuse = light.diffuse * diff * vec3(texture(material.diffuse, TexCoords));
+  vec3 specular = light.specular * spec * vec3(texture(material.specular, TexCoords));
+
+  return (ambient + diffuse + specular) * objectColor;
+}
+
+vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir) {
+  vec3 lightDir = normalize(light.position - fragPos);
+  float diff = max(dot(normal, lightDir), 0.0);
+
+  vec3 reflectDir = reflect(-lightDir, normal);
+  float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
 
   float distance = length(light.position - FragPos);
   float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));
+
+  vec3 ambient = light.ambient * vec3(texture(material.diffuse, TexCoords));
+  vec3 diffuse = light.diffuse * diff * vec3(texture(material.diffuse, TexCoords));
+  vec3 specular = light.specular * spec * vec3(texture(material.specular, TexCoords));
+
+  return (ambient + diffuse + specular) * objectColor * attenuation;
+}
+
+vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir) {
+  vec3 lightDir = normalize(light.position - fragPos);
+  float diff = max(dot(normal, lightDir), 0.0);
+
+  vec3 reflectDir = reflect(-lightDir, normal);
+  float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+
+  vec3 ambient = light.ambient * vec3(texture(material.diffuse, TexCoords));
+  vec3 diffuse = light.diffuse * diff * vec3(texture(material.diffuse, TexCoords));
+  vec3 specular = light.specular * spec * vec3(texture(material.specular, TexCoords));
 
   float theta = dot(lightDir, normalize(-light.direction));
   float epsilon = light.cutoff - light.outerCutoff;
@@ -55,6 +118,5 @@ void main() {
   diffuse *= intensity;
   specular *= intensity;
 
-  vec3 result = (ambient + diffuse + specular) * objectColor * attenuation;
-  FragColor = vec4(result, 1.0);
+  return (ambient + diffuse + specular) * objectColor;
 }
